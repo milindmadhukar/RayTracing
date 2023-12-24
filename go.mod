@@ -4,6 +4,7 @@ go 1.21.5
 
 require (
 	fyne.io/fyne/v2 v2.4.3
+	github.com/go-gl/mathgl v1.1.0
 )
 
 require (
