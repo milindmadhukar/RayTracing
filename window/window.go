@@ -1,16 +1,11 @@
 package window
 
 import (
-	"image"
-	"time"
-
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/milindmadhukar/RayTracing/camera"
-	"github.com/milindmadhukar/RayTracing/renderer"
 	"github.com/milindmadhukar/RayTracing/scene"
 )
 
@@ -18,34 +13,21 @@ type Window struct {
 	FyneApp           fyne.App
 	FyneWindow        fyne.Window
 	SettingsContainer *fyne.Container
-	RenderedRaster    *canvas.Raster
+	RenderedRaster    *RenderedRaster
 	FPSLabel          *widget.Label
 	AutoRender        bool
-}
-
-func (applicationWindow *Window) GetRenderedImage(camera *camera.Camera) *canvas.Raster {
-
-	return canvas.NewRaster(
-		func(w, h int) image.Image {
-			now := time.Now()
-			camera.OnResize(w, h)
-			img := renderer.GenerateImage(w, h, camera)
-			renderer.UpdateFPSLabel(applicationWindow.FPSLabel, time.Since(now))
-			return img
-		},
-	)
 }
 
 func (applicationWindow *Window) Init(scene *scene.Scene) {
 	applicationWindow.FPSLabel = widget.NewLabel("FPS: 0 (Render time: 0ms)")
 
 	renderButton := widget.NewButton("Render", func() {
-		applicationWindow.Update()
+		applicationWindow.Update(scene.Camera)
 	})
 
 	applicationWindow.SettingsContainer = container.New(layout.NewVBoxLayout(), applicationWindow.FPSLabel, renderButton)
 
-	applicationWindow.RenderedRaster = applicationWindow.GetRenderedImage(scene.Camera)
+	applicationWindow.RenderedRaster = NewRenderedRaster(applicationWindow, scene.Camera)
 
 	mainContainer := container.NewHSplit(applicationWindow.RenderedRaster, applicationWindow.SettingsContainer)
 	mainContainer.SetOffset(0.80)
@@ -53,14 +35,17 @@ func (applicationWindow *Window) Init(scene *scene.Scene) {
 	if applicationWindow.AutoRender {
 		go func() {
 			for {
-				applicationWindow.Update()
+				applicationWindow.Update(scene.Camera)
 			}
 		}()
 	}
 
+	applicationWindow.FyneWindow.Canvas()
+
 	applicationWindow.FyneWindow.SetContent(mainContainer)
 }
 
-func (applicationWindow *Window) Update() {
+func (applicationWindow *Window) Update(camera *camera.Camera) {
+	camera.OnUpdate(applicationWindow.RenderedRaster)
 	applicationWindow.RenderedRaster.Refresh()
 }

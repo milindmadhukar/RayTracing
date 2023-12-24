@@ -3,6 +3,7 @@ package camera
 import (
 	"math"
 
+	"fyne.io/fyne/v2"
 	glm "github.com/go-gl/mathgl/mgl64"
 	"github.com/milindmadhukar/RayTracing/utils"
 )
@@ -62,7 +63,9 @@ func NewCamera(verticalFOV, NearClipPlane, FarClipPlane float64) *Camera {
 	return camera
 }
 
-func (camera *Camera) OnUpdate() {
+func (camera *Camera) OnUpdate(renderedRaster fyne.CanvasObject) {
+
+  // renderedRaster.
 
 }
 
