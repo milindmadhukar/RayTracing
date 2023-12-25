@@ -1,6 +1,8 @@
 package window
 
 import (
+	"strconv"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
@@ -24,23 +26,33 @@ func (applicationWindow *Window) Create(scene *scene.Scene) {
 		applicationWindow.Update()
 	})
 
+  raytracingConfigContainer := getRayTracingConfigUI(scene)
+
 	allSphereContainers := container.New(layout.NewVBoxLayout())
 
-	for _, sphere := range scene.Spheres {
+	for index, sphere := range scene.Spheres {
+    sphereLabel := widget.NewLabel("Sphere " + strconv.Itoa(index) + " Settings")
 		posContainer := getSpherePositionUI(sphere)
 		radiusContainer := getSphereRadiusUI(sphere)
-		colorContainer := getSphereColorUI(sphere, applicationWindow)
-		sphereContainer := container.New(layout.NewVBoxLayout(), posContainer, radiusContainer, colorContainer)
+		sphereMaterialIndexContainer := getSphereMaterialIndexUI(sphere, applicationWindow, scene)
+		sphereContainer := container.New(layout.NewVBoxLayout(), sphereLabel, posContainer, radiusContainer, sphereMaterialIndexContainer)
 
-    allSphereContainers.Add(sphereContainer)
+		allSphereContainers.Add(sphereContainer)
 	}
 
-	// applicationWindow.SettingsContainer = container.New(layout.NewVBoxLayout(), applicationWindow.FPSLabel, renderButton, sphereContainer)
+	allMaterialsContainers := container.New(layout.NewVBoxLayout())
+
+	for idx, material := range scene.Materials {
+		materialProperties := getMaterialsUI(material, idx, applicationWindow)
+
+		allMaterialsContainers.Add(materialProperties)
+	}
+
 
 	applicationWindow.SettingsContainer = container.NewVScroll(
 		container.New(
 			layout.NewVBoxLayout(),
-			applicationWindow.FPSLabel, renderButton, allSphereContainers,
+			applicationWindow.FPSLabel, renderButton, raytracingConfigContainer, allSphereContainers, allMaterialsContainers,
 		),
 	)
 

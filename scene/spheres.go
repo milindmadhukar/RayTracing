@@ -4,24 +4,31 @@ import (
 	glm "github.com/go-gl/mathgl/mgl64"
 )
 
+type Material struct {
+	Albedo    glm.Vec3
+	Roughness float64
+	Metallic  float64
+}
+
 type Sphere struct {
 	Position glm.Vec3
 	Radius   float64
-	Albedo   glm.Vec3
+
+	MaterialIndex int
 }
 
 func NewDefaultSphere() *Sphere {
 	return &Sphere{
 		Position: glm.Vec3{0, 0, 0},
 		Radius:   0.5,
-		Albedo:   glm.Vec3{1, 1, 1}, // White
+		MaterialIndex: 0,
 	}
 }
 
-func NewSphere(position glm.Vec3, radius float64, albedo glm.Vec3) *Sphere {
+func NewSphere(position glm.Vec3, radius float64, materialIndex int) *Sphere {
 	return &Sphere{
 		Position: position,
 		Radius:   radius,
-		Albedo:   albedo,
+		MaterialIndex: materialIndex,
 	}
 }

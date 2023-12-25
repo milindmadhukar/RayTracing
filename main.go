@@ -14,7 +14,7 @@ type Application struct {
 func main() {
 	application := NewApplication()
 
-	application.Window.AutoRender = false
+	application.Window.AutoRender = true
 	
 	application.Window.Create(application.Scene)
 

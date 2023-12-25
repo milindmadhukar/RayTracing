@@ -45,7 +45,7 @@ func NewCamera(verticalFOV, NearClipPlane, FarClipPlane float64) *Camera {
 		NearClipPlane:    NearClipPlane,
 		FarClipPlane:     FarClipPlane,
 		ForwardDirection: glm.Vec3{0.0, 0.0, -1.0},
-		Position:         glm.Vec3{0.0, 0.0, 3.0},
+		Position:         glm.Vec3{0.0, 0.0, 5.0},
 	}
 
 	for y := 0; y < 4; y++ {
