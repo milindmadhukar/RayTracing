@@ -65,8 +65,6 @@ func NewCamera(verticalFOV, NearClipPlane, FarClipPlane float64) *Camera {
 
 func (camera *Camera) OnUpdate(renderedRaster fyne.CanvasObject) {
 
-  // renderedRaster.
-
 }
 
 func (camera *Camera) OnResize(width, height int) {

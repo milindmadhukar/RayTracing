@@ -5,7 +5,7 @@ import (
 	"math"
 
 	glm "github.com/go-gl/mathgl/mgl64"
-	"github.com/milindmadhukar/RayTracing/camera"
+	"github.com/milindmadhukar/RayTracing/scene"
 	"github.com/milindmadhukar/RayTracing/utils"
 )
 
@@ -14,15 +14,15 @@ type Ray struct {
 	Direction glm.Vec3
 }
 
-func GenerateImage(width, height int, camera *camera.Camera) image.Image {
+func GenerateImage(width, height int, scene *scene.Scene) image.Image {
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
 	ray := Ray{}
-	ray.Origin = camera.Position
+	ray.Origin = scene.Camera.Position
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
-			ray.Direction = camera.RayDirections[utils.FlattenXY(x, y, width)]
-			colour := TraceRay(&ray)
+			ray.Direction = scene.Camera.RayDirections[utils.FlattenXY(x, y, width)]
+			colour := TraceRay(scene, &ray)
 			img.Set(x, height-y, utils.ConvertToRGBA(colour))
 		}
 	}
@@ -30,31 +30,50 @@ func GenerateImage(width, height int, camera *camera.Camera) image.Image {
 	return img
 }
 
-func TraceRay(ray *Ray) glm.Vec4 {
-	radius := 0.5
-
-	a := ray.Direction.Dot(ray.Direction)
-	b := 2.0 * ray.Origin.Dot(ray.Direction)
-	c := ray.Origin.Dot(ray.Origin) - (radius * radius)
-
-	discriminant := (b * b) - (4 * a * c)
-
-	if discriminant <= 0 {
-		// Return black if no intersection
+func TraceRay(myScene *scene.Scene, ray *Ray) glm.Vec4 {
+	if len(myScene.Spheres) == 0 {
 		return glm.Vec4{0.0, 0.0, 0.0, 1.0}
 	}
 
-	// t0 := (-b + math.Sqrt(discriminant)) / (2.0 * a)
-	closestT := (-b - math.Sqrt(discriminant)) / (2.0 * a)
+	var closestSphere *scene.Sphere = nil
+  var hitDistance float64 = math.MaxFloat64
 
-	hitPoint := ray.Origin.Add(ray.Direction.Mul(closestT))
+	for _, sphere := range myScene.Spheres {
+		origin := ray.Origin.Sub(sphere.Position)
+
+		a := ray.Direction.Dot(ray.Direction)
+		b := 2.0 * origin.Dot(ray.Direction)
+		c := origin.Dot(origin) - (sphere.Radius * sphere.Radius)
+
+		discriminant := (b * b) - (4 * a * c)
+
+		if discriminant <= 0 {
+			continue
+		}
+
+		// t0 := (-b + math.Sqrt(discriminant)) / (2.0 * a)
+		closestT := (-b - math.Sqrt(discriminant)) / (2.0 * a)
+
+    if closestT < hitDistance {
+      hitDistance = closestT
+      closestSphere = sphere
+    }
+	}
+
+  if closestSphere == nil {
+    return glm.Vec4{0.0, 0.0, 0.0, 1.0}
+  }
+
+  origin := ray.Origin.Sub(closestSphere.Position)
+
+	hitPoint := origin.Add(ray.Direction.Mul(hitDistance))
 	normal := hitPoint.Normalize()
 
 	lightDir := glm.Vec3{-1.0, -1.0, -1.0}.Normalize()
 
-	d := math.Max(0, normal.Dot(lightDir.Mul(-1.0))) // cosine of angle between normal and light direction
+	lightIntensity := math.Max(0, normal.Dot(lightDir.Mul(-1.0))) // cosine of angle between normal and light direction
 
-	sphereColour := glm.Vec3{1, 0, 1}.Mul(d)
+	sphereColour := closestSphere.Albedo.Mul(lightIntensity)
 
 	return sphereColour.Vec4(1.0)
 }
