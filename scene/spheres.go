@@ -4,12 +4,6 @@ import (
 	glm "github.com/go-gl/mathgl/mgl64"
 )
 
-type Material struct {
-	Albedo    glm.Vec3
-	Roughness float64
-	Metallic  float64
-}
-
 type Sphere struct {
 	Position glm.Vec3
 	Radius   float64

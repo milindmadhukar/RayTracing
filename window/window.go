@@ -26,12 +26,16 @@ func (applicationWindow *Window) Create(scene *scene.Scene) {
 		applicationWindow.Update()
 	})
 
-  raytracingConfigContainer := getRayTracingConfigUI(scene)
+	accumlationOptions := getAccumulationUI(scene, applicationWindow)
+
+	raytracingConfigContainer := getRayTracingConfigUI(scene)
+
+	cameraPositionContainer := getCameraPostionUI(scene.Camera)
 
 	allSphereContainers := container.New(layout.NewVBoxLayout())
 
 	for index, sphere := range scene.Spheres {
-    sphereLabel := widget.NewLabel("Sphere " + strconv.Itoa(index) + " Settings")
+		sphereLabel := widget.NewLabel("Sphere " + strconv.Itoa(index) + " Settings")
 		posContainer := getSpherePositionUI(sphere)
 		radiusContainer := getSphereRadiusUI(sphere)
 		sphereMaterialIndexContainer := getSphereMaterialIndexUI(sphere, applicationWindow, scene)
@@ -48,11 +52,10 @@ func (applicationWindow *Window) Create(scene *scene.Scene) {
 		allMaterialsContainers.Add(materialProperties)
 	}
 
-
 	applicationWindow.SettingsContainer = container.NewVScroll(
 		container.New(
 			layout.NewVBoxLayout(),
-			applicationWindow.FPSLabel, renderButton, raytracingConfigContainer, allSphereContainers, allMaterialsContainers,
+			applicationWindow.FPSLabel, renderButton, accumlationOptions, raytracingConfigContainer, cameraPositionContainer, allSphereContainers, allMaterialsContainers,
 		),
 	)
 

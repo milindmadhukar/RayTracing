@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"math/rand"
+
 	glm "github.com/go-gl/mathgl/mgl64"
 )
 
@@ -37,5 +39,21 @@ func QuaternionCrossProduct(q1, q2 glm.Quat) glm.Quat {
 			q1.W*q2.Y() + q1.Y()*q2.W + q1.Z()*q2.X() - q1.X()*q2.Z(),
 			q1.W*q2.Z() + q1.Z()*q2.W + q1.X()*q2.Y() - q1.Y()*q2.X(),
 		},
+	}
+}
+
+func InUnitSphere(random *rand.Rand) glm.Vec3 {
+	return glm.Vec3{
+		random.Float64(),
+		random.Float64(),
+		random.Float64(),
+	}.Mul(2.0).Sub(glm.Vec3{1.0, 1.0, 1.0})
+}
+
+func ComponentWiseMultiplication(vec1, vec2 glm.Vec3) glm.Vec3 {
+	return glm.Vec3{
+		vec1.X() * vec2.X(),
+		vec1.Y() * vec2.Y(),
+		vec1.Z() * vec2.Z(),
 	}
 }
