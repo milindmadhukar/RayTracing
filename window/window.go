@@ -1,8 +1,6 @@
 package window
 
 import (
-	"strconv"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
@@ -30,25 +28,18 @@ func (applicationWindow *Window) Create(scene *scene.Scene) {
 
 	raytracingConfigContainer := getRayTracingConfigUI(scene)
 
+  // FIXME: Camera position in UI doesn't change when changed with kb
 	cameraPositionContainer := getCameraPostionUI(scene.Camera)
 
 	allSphereContainers := container.New(layout.NewVBoxLayout())
-
 	for index, sphere := range scene.Spheres {
-		sphereLabel := widget.NewLabel("Sphere " + strconv.Itoa(index) + " Settings")
-		posContainer := getSpherePositionUI(sphere)
-		radiusContainer := getSphereRadiusUI(sphere)
-		sphereMaterialIndexContainer := getSphereMaterialIndexUI(sphere, applicationWindow, scene)
-		sphereContainer := container.New(layout.NewVBoxLayout(), sphereLabel, posContainer, radiusContainer, sphereMaterialIndexContainer)
-
+		sphereContainer := getSphereUI(sphere, index, scene)
 		allSphereContainers.Add(sphereContainer)
 	}
 
 	allMaterialsContainers := container.New(layout.NewVBoxLayout())
-
 	for idx, material := range scene.Materials {
 		materialProperties := getMaterialsUI(material, idx, applicationWindow)
-
 		allMaterialsContainers.Add(materialProperties)
 	}
 

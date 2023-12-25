@@ -11,16 +11,6 @@ type Application struct {
 	Scene  *scene.Scene
 }
 
-func main() {
-	application := NewApplication()
-
-	application.Window.AutoRender = true
-	
-	application.Window.Create(application.Scene)
-
-	application.Window.FyneWindow.ShowAndRun()
-}
-
 func NewApplication() *Application {
 	fyneApp := app.New()
 	fyneWindow := fyneApp.NewWindow("RayTracing")
@@ -36,4 +26,11 @@ func NewApplication() *Application {
 		Window: window,
 		Scene:  scene,
 	}
+}
+
+func main() {
+	application := NewApplication()
+	application.Window.AutoRender = true
+	application.Window.Create(application.Scene)
+	application.Window.FyneWindow.ShowAndRun()
 }
