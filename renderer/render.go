@@ -53,7 +53,7 @@ func GenerateImage(width, height int, scene *scene.Scene) image.Image {
 		scene.FrameIndex = 1
 	}
 
-  scene.FinalImage = finalImage
+	scene.FinalImage = finalImage
 	return finalImage
 }
 
@@ -66,34 +66,39 @@ func PerPixel(x, y, width int, myScene *scene.Scene) glm.Vec4 { // Ray Gen
 
 	totalLight := glm.Vec3{0.0, 0.0, 0.0}
 
-	for i := 0; i < myScene.MaxRayBounces; i++ {
-		payload := ray.TraceRay(myScene)
-		if payload.HitDistance < 0 {
-			// skyColor := glm.Vec3{0.6, 0.7, 0.9}
-      skyColor := glm.Vec3{0.0, 0.0, 0.0}
-			totalLight = totalLight.Add(utils.ComponentWiseMultiplication(skyColor, contribution))
-			break
+	for rayCount := 0; rayCount < myScene.RaysPerPixel; rayCount++ {
+		for bounces := 0; bounces < myScene.MaxRayBounces; bounces++ {
+			payload := ray.TraceRay(myScene)
+			if payload.HitDistance < 0 {
+				skyColor := glm.Vec3{0.6, 0.7, 0.9}
+				// skyColor := glm.Vec3{0.0, 0.0, 0.0}
+				totalLight = totalLight.Add(utils.ComponentWiseMultiplication(skyColor, contribution))
+				break
+			}
+
+			sphere := myScene.Spheres[payload.ObjectIndex]
+			material := myScene.Materials[sphere.MaterialIndex]
+
+			contribution = utils.ComponentWiseMultiplication(contribution, myScene.Materials[payload.ObjectIndex].Albedo)
+			totalLight = totalLight.Add(material.GetEmission())
+
+			ray.Origin = payload.WorldPosition.Add(payload.WorldNormal.Mul(0.0001))
+
+			vec1 := ray.Direction
+			
+			roughness := myScene.Materials[sphere.MaterialIndex].Roughness
+			
+			vec2 := payload.WorldNormal.Add(
+        utils.ComponentWiseMultiplication(
+          glm.Vec3{roughness, roughness, roughness},
+          utils.InUnitSphere(myScene.Random,
+          ),
+        ),
+      )
+			
+			ray.Direction = vec1.Sub(vec2.Mul(2.0 * vec1.Dot(vec2)))
 		}
-
-		sphere := myScene.Spheres[payload.ObjectIndex]
-		material := myScene.Materials[sphere.MaterialIndex]
-
-		contribution = utils.ComponentWiseMultiplication(contribution, myScene.Materials[payload.ObjectIndex].Albedo)
-		totalLight = totalLight.Add(material.GetEmission())
-
-		ray.Origin = payload.WorldPosition.Add(payload.WorldNormal.Mul(0.0001))
-
-		// vec1 := ray.Direction
-
-		// roughness := myScene.Materials[sphere.MaterialIndex].Roughness
-		// randomOffset := myScene.Random.Float64() - 0.5
-
-		// vec2 := payload.WorldNormal.Add(glm.Vec3{roughness, roughness, roughness}.Mul(randomOffset))
-
-		// ray.Direction = vec1.Sub(vec2.Mul(2.0 * vec1.Dot(vec2)))
-		ray.Direction = payload.WorldNormal.Add(utils.InUnitSphere(myScene.Random)).Normalize()
 	}
 
-	return totalLight.Vec4(1.0)
+	return totalLight.Mul(1.0 / float64(myScene.RaysPerPixel)).Vec4(1.0)
 }
-
