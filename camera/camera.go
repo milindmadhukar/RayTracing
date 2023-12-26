@@ -65,7 +65,6 @@ func NewCamera(verticalFOV, NearClipPlane, FarClipPlane float64) *Camera {
 func (camera *Camera) OnResize(width, height int) {
 	camera.ViewportWidth = width
 	camera.ViewportHeight = height
-
 	camera.RecalculateProjectionMatrix()
 	camera.RecalculateRayDirections()
 }

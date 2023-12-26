@@ -5,14 +5,15 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	glm "github.com/go-gl/mathgl/mgl64"
 	"github.com/milindmadhukar/RayTracing/scene"
 )
 
-func getCameraPostionUI(myScene *scene.Scene) *fyne.Container {
-  camera := myScene.Camera
+func getCameraPostionUI(myScene *scene.Scene, applicationWindow *Window) *fyne.Container {
+	camera := myScene.Camera
 
 	xPos := widget.NewEntry()
 	xPos.SetPlaceHolder("X:")
@@ -57,6 +58,48 @@ func getCameraPostionUI(myScene *scene.Scene) *fyne.Container {
 	}
 
 	posLabel := widget.NewLabel("Camera Position:")
-	posContainer := container.New(layout.NewGridLayout(3), xPos, yPos, zPos)
-	return container.New(layout.NewVBoxLayout(), posLabel, posContainer)
+	applicationWindow.CameraPositionContainer = container.New(layout.NewGridLayout(3), xPos, yPos, zPos)
+	return container.New(layout.NewVBoxLayout(), posLabel, applicationWindow.CameraPositionContainer)
+}
+
+func getCameraViewingUI(myScene *scene.Scene) *fyne.Container {
+
+	camera := myScene.Camera
+
+	fovBind := binding.BindFloat(&camera.VerticalFOV)
+	fovLabel := widget.NewLabelWithData(binding.FloatToStringWithFormat(fovBind, "Vertical FOV: %.2f"))
+	fovSlider := widget.NewSliderWithData(0, 90, fovBind)
+	fovSlider.Step = 1
+
+	// FIX: Stops the bind from working
+	fovSlider.OnChanged = func(value float64) {
+		fovBind.Set(value)
+		camera.RecalculateViewMatrix()
+	}
+
+	fovContainer := container.New(layout.NewGridLayout(2), fovLabel, fovSlider)
+
+	nearClipPlaneLabel := widget.NewLabel("Camera Near Clip Plane:")
+	nearClipPlaneBind := binding.BindFloat(&camera.NearClipPlane)
+	nearClipPlaneSlider := widget.NewEntryWithData(binding.FloatToString(nearClipPlaneBind))
+	nearClipPlaneSlider.SetPlaceHolder("Near Clip Plane:")
+	nearClipPlaneSlider.MultiLine = false
+
+	nearClipContainer := container.New(layout.NewGridLayout(2), nearClipPlaneLabel, nearClipPlaneSlider)
+
+	farClipPlaneLabel := widget.NewLabel("Camera Far Clip Plane:")
+	farClipPlaneBind := binding.BindFloat(&camera.FarClipPlane)
+	farClipPlaneSlider := widget.NewEntryWithData(binding.FloatToString(farClipPlaneBind))
+	farClipPlaneSlider.SetPlaceHolder("Far Clip Plane:")
+	farClipPlaneSlider.MultiLine = false
+
+	farClipContainer := container.New(layout.NewGridLayout(2), farClipPlaneLabel, farClipPlaneSlider)
+
+	return container.New(layout.NewVBoxLayout(), fovContainer, nearClipContainer, farClipContainer)
+}
+
+func getCameraUI(myScene *scene.Scene, applicationWindow *Window) *fyne.Container {
+
+	cameraSettingsLabel := widget.NewLabel("Camera Settings:")
+	return container.New(layout.NewVBoxLayout(), cameraSettingsLabel, getCameraPostionUI(myScene, applicationWindow), getCameraViewingUI(myScene))
 }

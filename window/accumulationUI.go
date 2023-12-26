@@ -37,6 +37,9 @@ func getAccumulationUI(scene *scene.Scene, applicationWindow *Window) *fyne.Cont
 	resetAccumulationBtn := widget.NewButton(
 		"Reset Accumulation",
 		func() {
+			if !scene.ToAccumulate {
+				return
+			}
 			scene.FrameIndex = 1
 		},
 	)

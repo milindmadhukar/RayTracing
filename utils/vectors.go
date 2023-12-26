@@ -57,3 +57,7 @@ func ComponentWiseMultiplication(vec1, vec2 glm.Vec3) glm.Vec3 {
 		vec1.Z() * vec2.Z(),
 	}
 }
+
+func CalculateDirection(from, to glm.Vec3) glm.Vec3 {
+  return to.Sub(from).Normalize()
+}

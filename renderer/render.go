@@ -21,10 +21,10 @@ type hitPayLoad struct {
 	ObjectIndex int
 }
 
-func GenerateImage(width, height int, myScene *scene.Scene) image.Image {
+func AcuumulateImage(width, height int, myScene *scene.Scene) image.Image {
 	finalImage := myScene.FinalImage
 
-	if myScene.FrameIndex == 1 || len(myScene.AccumulatedImage) == 0 {
+	if myScene.FrameIndex == 1 {
 		myScene.AccumulatedImage = make([]*glm.Vec4, width*height)
 
 		for y := 0; y < height; y++ {
@@ -38,7 +38,6 @@ func GenerateImage(width, height int, myScene *scene.Scene) image.Image {
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			colour := PerPixel(x, y, width, height, myScene)
-
 			newColour := myScene.AccumulatedImage[utils.FlattenXY(x, y, width)].Add(colour)
 			myScene.AccumulatedImage[utils.FlattenXY(x, y, width)] = &newColour
 			accumulatedColor := newColour.Mul(1.0 / float64(myScene.FrameIndex))
@@ -75,7 +74,6 @@ func PerPixel(x, y, width, height int, myScene *scene.Scene) glm.Vec4 { // Ray G
 		for bounces := 0; bounces < myScene.MaxRayBounces; bounces++ {
 			payload := ray.TraceRay(myScene)
 			if payload.HitDistance < 0 {
-				// TODO: Be able to set the skycolour using UI.
 				totalLight = totalLight.Add(utils.ComponentWiseMultiplication(myScene.SkyColor, contribution))
 				break
 			}

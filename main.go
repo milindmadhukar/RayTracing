@@ -35,7 +35,7 @@ func NewApplication() *Application {
 func main() {
 	// TODO: Rendering with sampling without a GUI.
 	application := NewApplication()
-	application.Window.AutoRender = true
+	application.Window.AutoRender = false
   application.Window.AutoRenderContext, application.Window.AutoRenderContextCancel = context.WithCancel(context.Background())
 
 	application.Window.Create(application.Scene)

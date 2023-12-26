@@ -32,7 +32,7 @@ func (applicationWindow *Window) GetRenderedImage(scene *scene.Scene) *canvas.Ra
 				scene.FinalImage = image.NewRGBA(image.Rect(0, 0, w, h))
 			}
 
-			renderedImage := renderer.GenerateImage(w, h, scene)
+			renderedImage := renderer.AcuumulateImage(w, h, scene)
 			renderer.UpdateFPSLabel(applicationWindow.FPSLabel, time.Since(now))
 
 			return renderedImage
@@ -56,7 +56,6 @@ func (renderedRaster *RenderedRaster) CreateRenderer() fyne.WidgetRenderer {
 }
 
 func (renderedRaster *RenderedRaster) MouseDown(mouseEvent *desktop.MouseEvent) {
-
 	if mouseEvent.Button != desktop.MouseButtonSecondary {
 		return
 	}
@@ -88,6 +87,8 @@ func (renderedRaster *RenderedRaster) MouseDown(mouseEvent *desktop.MouseEvent) 
 		renderedRaster.camera.RecalculateViewMatrix()
 		renderedRaster.camera.RecalculateRayDirections()
 		renderedRaster.window.Update()
+    // FIXME: This did not work, maybe I have to update the binds
+    renderedRaster.window.CameraPositionContainer.Refresh()
 		// TODO: Set frame index to 1
 	}
 }
@@ -139,6 +140,8 @@ func (renderedRaster *RenderedRaster) KeyDown(keyEvent *fyne.KeyEvent) {
 		renderedRaster.camera.RecalculateViewMatrix()
 		renderedRaster.camera.RecalculateRayDirections()
 		renderedRaster.window.Update()
+    // FIXME: This did not work, maybe I have to update the binds
+    renderedRaster.window.CameraPositionContainer.Refresh()
 		// TODO: Set frame index to 1
 	}
 }

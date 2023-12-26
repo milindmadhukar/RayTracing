@@ -15,6 +15,7 @@ type Window struct {
 	FyneWindow        fyne.Window
 	SettingsContainer *container.Scroll
 	RenderedRaster    *RenderedRaster
+  CameraPositionContainer *fyne.Container
 	MainContainer     *container.Split
 	FPSLabel          *widget.Label
 	AutoRender        bool
@@ -41,7 +42,7 @@ func (applicationWindow *Window) Create(scene *scene.Scene) {
 	raytracingConfigContainer := getRayTracingConfigUI(scene)
 
 	// FIXME: Camera position in UI doesn't change when changed with kb
-	cameraPositionContainer := getCameraPostionUI(scene)
+	cameraContainer := getCameraUI(scene, applicationWindow)
 
 	skyColorPickerContainer := getSkyColorPickerUI(scene, applicationWindow)
 
@@ -65,7 +66,7 @@ func (applicationWindow *Window) Create(scene *scene.Scene) {
 			stateUIContainer,
 			accumlationOptions,
 			raytracingConfigContainer,
-			cameraPositionContainer,
+			cameraContainer,
 			skyColorPickerContainer,
 			allSphereContainers,
 			allMaterialsContainers,
