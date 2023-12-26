@@ -2,7 +2,9 @@ package scene
 
 import (
 	"image"
+	"io"
 	"math/rand"
+	"os"
 	"time"
 
 	glm "github.com/go-gl/mathgl/mgl64"
@@ -16,6 +18,7 @@ type Scene struct {
 	FinalImage       *image.RGBA `json:"-"`
 	AccumulatedImage []*glm.Vec4 `json:"-"`
 	ToAccumulate     bool        `json:"-"`
+	IsRendering      bool        `json:"-"`
 
 	FrameIndex int `json:"frame_index"`
 
@@ -23,35 +26,30 @@ type Scene struct {
 
 	Materials []*Material `json:"materials"`
 
+	Random *utils.SafeRandom `json:"-"`
+
 	SkyColor glm.Vec3 `json:"sky_color"`
 
-	Random               *rand.Rand `json:"-"`
-	MaxRayBounces        int        `json:"max_ray_bounces"`
-	RaysPerPixel         int        `json:"rays_per_pixel"`
-	MaxRayBounceDistance float64    `json:"max_ray_bounce_distance"`
+	MaxRayBounces        int     `json:"max_ray_bounces"`
+	RaysPerPixel         int     `json:"rays_per_pixel"`
+	MaxRayBounceDistance float64 `json:"max_ray_bounce_distance"`
 }
 
 func NewScene() *Scene {
-	scene := &Scene{
-		Camera: camera.NewDefaultCamera(),
+	basic, err := os.Open("example_scenes/threeballs.json")
+	if err != nil {
+		panic(err)
 	}
 
-	scene.ToAccumulate = false
-	scene.FrameIndex = 1
+	reader := io.Reader(basic)
+	scene, err := LoadStateFromJson(reader)
+	if err != nil {
+		panic(err)
+	}
 
-	scene.SkyColor = glm.Vec3{0.6, 0.7, 0.9}
+  scene.Random = utils.NewSafeRandom()
 
-	scene.Random = rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	material1 := NewDefaultMaterial()
-	scene.Materials = append(scene.Materials, material1)
-
-	sphere1 := NewDefaultSphere()
-	scene.Spheres = append(scene.Spheres, sphere1)
-
-	scene.MaxRayBounces = 3
-	scene.RaysPerPixel = 2
-	scene.MaxRayBounceDistance = 1000.0 // TODO: Not implemented yet.
+	// TODO: Max bounces not implemented yet.
 
 	return scene
 }
@@ -65,13 +63,13 @@ func NewRayTracingInOneWeekendScene() *Scene {
 	lookAt := glm.Vec3{0.0, 0.0, 0.0}
 	scene.Camera.ForwardDirection = utils.CalculateDirection(scene.Camera.Position, lookAt)
 
-	scene.ToAccumulate = false
-	scene.FrameIndex = 1000.0
+	scene.FrameIndex = 1
 
 	scene.SkyColor = glm.Vec3{0.6, 0.7, 0.9}
 
-	scene.MaxRayBounces = 3
-	scene.RaysPerPixel = 2
+	scene.MaxRayBounces = 50
+	scene.RaysPerPixel = 500
+
 	scene.MaxRayBounceDistance = 1000.0 // TODO: Not implemented yet.
 
 	groundMaterial := NewDefaultMaterial()
@@ -83,10 +81,6 @@ func NewRayTracingInOneWeekendScene() *Scene {
 	groundSphere.Position = glm.Vec3{0.0, -1000.0, 0.0}
 	groundSphere.Radius = 1000.050
 	groundSphere.MaterialIndex = 0
-
-	scene.ToAccumulate = true
-
-	scene.Random = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	scene.Materials = append(scene.Materials, groundMaterial)
 	scene.Spheres = append(scene.Spheres, groundSphere)
@@ -111,10 +105,12 @@ func NewRayTracingInOneWeekendScene() *Scene {
 	materail4.Roughness = 0.9
 	materail4.Metallic = 0.7
 
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
+
 	for a := -11; a < 11; a++ {
 		for b := -11; b < 11; b++ {
-			chooseMaterial := scene.Random.Float64()
-			center := glm.Vec3{float64(a) + 0.9*scene.Random.Float64(), 0.2, float64(b) + 0.9*scene.Random.Float64()}
+			chooseMaterial := random.Float64()
+			center := glm.Vec3{float64(a) + 0.9*random.Float64(), 0.2, float64(b) + 0.9*random.Float64()}
 			if center.Sub(glm.Vec3{4.0, 0.2, 0.0}).Len() > 0.9 {
 				if chooseMaterial < 0.8 { // Diffuse
 					albedo := utils.ComponentWiseMultiplication(utils.InUnitSphere(scene.Random), utils.InUnitSphere(scene.Random))
@@ -124,7 +120,7 @@ func NewRayTracingInOneWeekendScene() *Scene {
 					scene.Spheres = append(scene.Spheres, sphere)
 				} else if chooseMaterial < 0.95 { // Metal
 					albedo := utils.InUnitSphere(scene.Random).Add(glm.Vec3{1.0, 1.0, 1.0}).Mul(0.5)
-					roughness := 0.5 * scene.Random.Float64()
+					roughness := 0.5 * random.Float64()
 					material := NewMaterial(albedo, roughness, 1.0, glm.Vec3{0.0, 0.0, 0.0}, 0.0)
 					sphere := NewSphere(center, 0.2, len(scene.Materials))
 					scene.Materials = append(scene.Materials, material)

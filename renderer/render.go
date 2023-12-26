@@ -21,8 +21,11 @@ type hitPayLoad struct {
 	ObjectIndex int
 }
 
-func AcuumulateImage(width, height int, myScene *scene.Scene) image.Image {
+func AcummulateImage(myScene *scene.Scene) *image.RGBA {
 	finalImage := myScene.FinalImage
+
+	width := myScene.Camera.ViewportWidth
+	height := myScene.Camera.ViewportHeight
 
 	if myScene.FrameIndex == 1 {
 		myScene.AccumulatedImage = make([]*glm.Vec4, width*height)

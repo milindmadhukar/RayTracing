@@ -2,7 +2,6 @@ package window
 
 import (
 	"image"
-	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -12,6 +11,7 @@ import (
 	"github.com/milindmadhukar/RayTracing/camera"
 	"github.com/milindmadhukar/RayTracing/renderer"
 	"github.com/milindmadhukar/RayTracing/scene"
+	"github.com/milindmadhukar/RayTracing/utils"
 )
 
 type RenderedRaster struct {
@@ -21,21 +21,50 @@ type RenderedRaster struct {
 	window      *Window
 }
 
+func (applicationWindow *Window) accumulatedRender(scene *scene.Scene) image.Image {
+	renderedImage := renderer.AcummulateImage(scene)
+	// renderer.UpdateFPSLabel(applicationWindow.FPSLabel, time.Since(now))
+	return renderedImage
+}
+
+func (applicationWindow *Window) perPixelRender(scene *scene.Scene) {
+	width := scene.Camera.ViewportWidth
+	height := scene.Camera.ViewportHeight
+
+	for y := height - 1; y > 0; y-- {
+		for x := 0; x < width; x++ {
+			go func(x, y int) {
+				colour := renderer.PerPixel(x, y, width, height, scene)
+				scene.FinalImage.Set(x, height-y, utils.ConvertToRGBA(colour))
+			}(x, y)
+		}
+	}
+	// renderer.UpdateFPSLabel(applicationWindow.FPSLabel, time.Since(now))
+}
+
 func (applicationWindow *Window) GetRenderedImage(scene *scene.Scene) *canvas.Raster {
 	return canvas.NewRaster(
-		func(w, h int) image.Image {
-			now := time.Now()
+		func(width, height int) image.Image {
 
-			if w != scene.Camera.ViewportWidth || h != scene.Camera.ViewportHeight {
-				scene.Camera.OnResize(w, h)
+			if width != scene.Camera.ViewportWidth || height != scene.Camera.ViewportHeight {
+				scene.Camera.OnResize(width, height)
 				scene.FrameIndex = 1
-				scene.FinalImage = image.NewRGBA(image.Rect(0, 0, w, h))
+				scene.FinalImage = image.NewRGBA(image.Rect(0, 0, width, height))
+				scene.IsRendering = false
 			}
 
-			renderedImage := renderer.AcuumulateImage(w, h, scene)
-			renderer.UpdateFPSLabel(applicationWindow.FPSLabel, time.Since(now))
+			if scene.ToAccumulate {
+				scene.IsRendering = false
+				return applicationWindow.accumulatedRender(scene)
+			}
 
-			return renderedImage
+			if !scene.IsRendering {
+				scene.FinalImage = image.NewRGBA(image.Rect(0, 0, width, height))
+				scene.IsRendering = true
+				go applicationWindow.perPixelRender(scene)
+			}
+
+			return scene.FinalImage
 		},
 	)
 }
@@ -87,8 +116,8 @@ func (renderedRaster *RenderedRaster) MouseDown(mouseEvent *desktop.MouseEvent) 
 		renderedRaster.camera.RecalculateViewMatrix()
 		renderedRaster.camera.RecalculateRayDirections()
 		renderedRaster.window.Update()
-    // FIXME: This did not work, maybe I have to update the binds
-    renderedRaster.window.CameraPositionContainer.Refresh()
+		// FIXME: This did not work, maybe I have to update the binds
+		renderedRaster.window.CameraPositionContainer.Refresh()
 		// TODO: Set frame index to 1
 	}
 }
@@ -140,8 +169,8 @@ func (renderedRaster *RenderedRaster) KeyDown(keyEvent *fyne.KeyEvent) {
 		renderedRaster.camera.RecalculateViewMatrix()
 		renderedRaster.camera.RecalculateRayDirections()
 		renderedRaster.window.Update()
-    // FIXME: This did not work, maybe I have to update the binds
-    renderedRaster.window.CameraPositionContainer.Refresh()
+		// FIXME: This did not work, maybe I have to update the binds
+		renderedRaster.window.CameraPositionContainer.Refresh()
 		// TODO: Set frame index to 1
 	}
 }

@@ -48,6 +48,8 @@ func getSceneStateUI(myScene *scene.Scene, applicationWindow *Window) *fyne.Cont
 		},
 	)
 
+	// FIX: Does not work when loading second time.
+
 	openDialog := dialog.NewFileOpen(func(reader fyne.URIReadCloser, err error) {
 		if err != nil {
 			return
@@ -79,6 +81,7 @@ func getSceneStateUI(myScene *scene.Scene, applicationWindow *Window) *fyne.Cont
 		myScene.Materials = newScene.Materials
 
 		myScene.FrameIndex = 1
+		myScene.IsRendering = false
 
 		applicationWindow.AutoRenderContext, applicationWindow.AutoRenderContextCancel = context.WithCancel(context.Background())
 

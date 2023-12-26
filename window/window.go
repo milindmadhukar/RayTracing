@@ -31,6 +31,8 @@ func (applicationWindow *Window) Create(scene *scene.Scene) {
 
 	// TODO: Add Sphere/Remove Sphere dialog and buttons
 
+  // TODO: Start and restart redner buttons
+
 	renderButton := widget.NewButton("Render", func() {
 		applicationWindow.Update()
 	})
