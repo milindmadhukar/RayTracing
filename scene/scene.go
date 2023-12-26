@@ -10,27 +10,28 @@ import (
 )
 
 type Scene struct {
-	ViewportWidth  int
-	ViewportHeight int
+	Camera *camera.Camera `json:"camera"`
 
-	Camera *camera.Camera
+	FinalImage       *image.RGBA `json:"-"`
+	AccumulatedImage []*glm.Vec4 `json:"-"`
+	ToAccumulate     bool        `json:"-"`
 
-  FinalImage       image.Image
-	AccumulatedImage []*glm.Vec4
-	ToAccumulate     bool
-	FrameIndex       int
+	FrameIndex int `json:"frame_index"`
 
-	Spheres []*Sphere
+	Spheres []*Sphere `json:"spheres"`
 
-	Materials []*Material
+	Materials []*Material `json:"materials"`
 
-	Random               *rand.Rand
-	MaxRayBounces        int
-	RaysPerPixel         int
-	MaxRayBounceDistance float64
+	Random               *rand.Rand `json:"-"`
+	MaxRayBounces        int        `json:"max_ray_bounces"`
+	RaysPerPixel         int        `json:"rays_per_pixel"`
+	MaxRayBounceDistance float64    `json:"max_ray_bounce_distance"`
 }
 
 func NewScene() *Scene {
+
+	// TODO: make example directory and load example scene from there.
+
 	scene := &Scene{
 		Camera: camera.NewDefaultCamera(),
 	}
@@ -54,8 +55,8 @@ func NewScene() *Scene {
 	material4.Albedo = glm.Vec3{0.8, 0.4, 0.6}
 	material4.Roughness = 0.2
 	material4.Metallic = 0.5
-  material4.EmissionColor = material1.Albedo
-  material4.EmissionPower = 2.0
+	material4.EmissionColor = material1.Albedo
+	material4.EmissionPower = 2.0
 
 	scene.Materials = append(scene.Materials, material1, material2, material3, material4)
 
@@ -82,9 +83,9 @@ func NewScene() *Scene {
 
 	scene.Spheres = append(scene.Spheres, sphere1, sphere2, sphere3, sphere4)
 
-	scene.MaxRayBounces = 2
-	scene.RaysPerPixel = 1
-	scene.MaxRayBounceDistance = 1000.0
+	scene.MaxRayBounces = 3
+	scene.RaysPerPixel = 2
+	scene.MaxRayBounceDistance = 1000.0 // TODO: Not implemented yet.
 
 	return scene
 }

@@ -24,11 +24,13 @@ func (applicationWindow *Window) Create(scene *scene.Scene) {
 		applicationWindow.Update()
 	})
 
+	stateUIContainer := getSceneStateUI(scene, applicationWindow)
+
 	accumlationOptions := getAccumulationUI(scene, applicationWindow)
 
 	raytracingConfigContainer := getRayTracingConfigUI(scene)
 
-  // FIXME: Camera position in UI doesn't change when changed with kb
+	// FIXME: Camera position in UI doesn't change when changed with kb
 	cameraPositionContainer := getCameraPostionUI(scene.Camera)
 
 	allSphereContainers := container.New(layout.NewVBoxLayout())
@@ -46,7 +48,7 @@ func (applicationWindow *Window) Create(scene *scene.Scene) {
 	applicationWindow.SettingsContainer = container.NewVScroll(
 		container.New(
 			layout.NewVBoxLayout(),
-			applicationWindow.FPSLabel, renderButton, accumlationOptions, raytracingConfigContainer, cameraPositionContainer, allSphereContainers, allMaterialsContainers,
+			applicationWindow.FPSLabel, renderButton, stateUIContainer, accumlationOptions, raytracingConfigContainer, cameraPositionContainer, allSphereContainers, allMaterialsContainers,
 		),
 	)
 

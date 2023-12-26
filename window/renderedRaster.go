@@ -21,23 +21,22 @@ type RenderedRaster struct {
 	window      *Window
 }
 
-func OnResize(width, height int, scene *scene.Scene) {
-	scene.Camera.OnResize(width, height)
-	scene.FrameIndex = 1
-}
-
 func (applicationWindow *Window) GetRenderedImage(scene *scene.Scene) *canvas.Raster {
 	return canvas.NewRaster(
 		func(w, h int) image.Image {
 			now := time.Now()
-			if w != scene.ViewportWidth || h != scene.ViewportHeight {
-				OnResize(w, h, scene)
-				scene.ViewportWidth = w
-				scene.ViewportHeight = h
+
+			if w != scene.Camera.ViewportHeight || h != scene.Camera.ViewportWidth {
+				scene.Camera.OnResize(w, h)
+				scene.FrameIndex = 1
+				scene.FinalImage = image.NewRGBA(image.Rect(0, 0, w, h))
 			}
-			img := renderer.GenerateImage(w, h, scene)
+
+			renderedImage := renderer.GenerateImage(w, h, scene)
+
 			renderer.UpdateFPSLabel(applicationWindow.FPSLabel, time.Since(now))
-			return img
+
+			return renderedImage
 		},
 	)
 }
@@ -66,7 +65,6 @@ func (renderedRaster *RenderedRaster) MouseDown(mouseEvent *desktop.MouseEvent) 
 	var moved bool = false
 
 	// FIXME: Its broken
-
 	mousePosition := glm.Vec2{float64(mouseEvent.AbsolutePosition.X), float64(mouseEvent.AbsolutePosition.Y)}
 	delta := mousePosition.Sub(renderedRaster.camera.LastMousePosition).Mul(0.0008)
 	renderedRaster.camera.LastMousePosition = mousePosition

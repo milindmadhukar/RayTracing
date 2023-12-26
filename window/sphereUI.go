@@ -96,11 +96,10 @@ func getSphereMaterialIndexUI(sphere *scene.Sphere, myScene *scene.Scene) *fyne.
 }
 
 func getSphereUI(sphere *scene.Sphere, index int, myScene *scene.Scene) *fyne.Container {
-		sphereLabel := widget.NewLabel("Sphere " + strconv.Itoa(index) + " Settings")
-		posContainer := getSpherePositionUI(sphere)
-		radiusContainer := getSphereRadiusUI(sphere)
-		sphereMaterialIndexContainer := getSphereMaterialIndexUI(sphere, myScene)
-		return container.New(layout.NewVBoxLayout(), sphereLabel, posContainer, radiusContainer, sphereMaterialIndexContainer)
-
+	sphereLabel := widget.NewLabel("Sphere " + strconv.Itoa(index) + " Settings")
+	posContainer := getSpherePositionUI(sphere)
+	radiusContainer := getSphereRadiusUI(sphere)
+	sphereMaterialIndexContainer := getSphereMaterialIndexUI(sphere, myScene)
+	return container.New(layout.NewVBoxLayout(), sphereLabel, posContainer, radiusContainer, sphereMaterialIndexContainer)
 
 }

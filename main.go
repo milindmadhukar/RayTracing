@@ -30,7 +30,7 @@ func NewApplication() *Application {
 
 func main() {
 	application := NewApplication()
-	application.Window.AutoRender = true
+	application.Window.AutoRender = false
 	application.Window.Create(application.Scene)
 	application.Window.FyneWindow.ShowAndRun()
 }

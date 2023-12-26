@@ -3,13 +3,12 @@ package scene
 import glm "github.com/go-gl/mathgl/mgl64"
 
 type Material struct {
-	Albedo    glm.Vec3
-	Roughness float64
-	Metallic  float64
-  EmissionColor glm.Vec3
-  EmissionPower float64
+	Albedo    glm.Vec3 `json:"albedo"`
+	Roughness float64 `json:"roughness"`
+	Metallic  float64 `json:"metallic"`
+  EmissionColor glm.Vec3 `json:"emission_color"`
+  EmissionPower float64 `json:"emission_power"`
 }
-
 
 func NewMaterial(albedo glm.Vec3, roughness, metallic float64, emmissionColor glm.Vec3, EmissionStrength float64) *Material {
 	return &Material{

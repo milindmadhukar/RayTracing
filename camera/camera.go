@@ -8,27 +8,27 @@ import (
 )
 
 type Camera struct {
-	ProjectionMatrix        glm.Mat4
-	ViewMatrix              glm.Mat4
-	InverseProjectionMatrix glm.Mat4
-	InverseViewMatrix       glm.Mat4
+	ProjectionMatrix        glm.Mat4 `json:"-"`
+	ViewMatrix              glm.Mat4 `json:"-"`
+	InverseProjectionMatrix glm.Mat4 `json:"-"`
+	InverseViewMatrix       glm.Mat4 `json:"-"`
 
-	VerticalFOV   float64
-	NearClipPlane float64
-	FarClipPlane  float64
+	VerticalFOV   float64 `json:"vertical_fov"`
+	NearClipPlane float64 `json:"near_clip_plane"`
+	FarClipPlane  float64 `json:"far_clip_plane"`
 
-	Position         glm.Vec3
-	ForwardDirection glm.Vec3
+	Position         glm.Vec3 `json:"position"`
+	ForwardDirection glm.Vec3 `json:"forward_direction"`
 
 	// Cached ray directions
-	RayDirections []glm.Vec3
+	RayDirections []glm.Vec3 `json:"-"`
 
-	LastMousePosition glm.Vec2
+	LastMousePosition glm.Vec2 `json:"-"`
 
-	RotationSpeed float64
+	RotationSpeed float64 `json:"rotation_speed"`
 
-	ViewportWidth  int
-	ViewportHeight int
+	ViewportWidth  int `json:"viewport_width"`
+	ViewportHeight int `json:"viewport_height"`
 }
 
 func NewDefaultCamera() *Camera {
@@ -71,7 +71,6 @@ func (camera *Camera) OnResize(width, height int) {
 }
 
 func (camera *Camera) RecalculateProjectionMatrix() {
-
 	camera.ProjectionMatrix = glm.Perspective(camera.VerticalFOV*(math.Pi/180), float64(camera.ViewportWidth)/float64(camera.ViewportHeight), camera.NearClipPlane, camera.FarClipPlane)
 	camera.InverseProjectionMatrix = camera.ProjectionMatrix.Inv()
 
