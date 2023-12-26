@@ -8,10 +8,12 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	glm "github.com/go-gl/mathgl/mgl64"
-	"github.com/milindmadhukar/RayTracing/camera"
+	"github.com/milindmadhukar/RayTracing/scene"
 )
 
-func getCameraPostionUI(camera *camera.Camera) *fyne.Container {
+func getCameraPostionUI(myScene *scene.Scene) *fyne.Container {
+  camera := myScene.Camera
+
 	xPos := widget.NewEntry()
 	xPos.SetPlaceHolder("X:")
 	xPos.MultiLine = false
@@ -33,6 +35,7 @@ func getCameraPostionUI(camera *camera.Camera) *fyne.Container {
 			return
 		}
 		camera.Position = glm.Vec3{xPosValue, camera.Position.Y(), camera.Position.Z()}
+		myScene.FrameIndex = 1
 	}
 
 	yPos.OnChanged = func(text string) {
@@ -41,6 +44,7 @@ func getCameraPostionUI(camera *camera.Camera) *fyne.Container {
 			return
 		}
 		camera.Position = glm.Vec3{camera.Position.X(), yPosValue, camera.Position.Z()}
+		myScene.FrameIndex = 1
 	}
 
 	zPos.OnChanged = func(text string) {
@@ -49,11 +53,10 @@ func getCameraPostionUI(camera *camera.Camera) *fyne.Container {
 			return
 		}
 		camera.Position = glm.Vec3{camera.Position.X(), camera.Position.Y(), zPosValue}
+		myScene.FrameIndex = 1
 	}
 
 	posLabel := widget.NewLabel("Camera Position:")
 	posContainer := container.New(layout.NewGridLayout(3), xPos, yPos, zPos)
-
 	return container.New(layout.NewVBoxLayout(), posLabel, posContainer)
-
 }

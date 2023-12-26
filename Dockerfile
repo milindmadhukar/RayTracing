@@ -1,23 +1,18 @@
-FROM golang:1.17-alpine3.15 as builder
+FROM golang:1.17-bullseye as builder
 WORKDIR /app
 
-RUN apk add --update alpine-sdk	mesa-gl
-
+RUN apt update && apt upgrade -y
+RUN apt install -y build-essential libgl1-mesa-dev xorg-dev
 ADD go.mod ./
 ADD go.sum ./
 RUN go mod download -x
 
-COPY . ./
-
-RUN go build main.go
-
-FROM golang:1.17-alpine3.15
-WORKDIR /app
-
 RUN go install fyne.io/fyne/v2/cmd/fyne@latest
 RUN go install github.com/gopherjs/gopherjs@latest
 
-COPY --from=builder /app/main . 
+COPY . ./
+
+RUN go build main.go
 
 EXPOSE 8080
 

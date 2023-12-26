@@ -21,46 +21,52 @@ type hitPayLoad struct {
 	ObjectIndex int
 }
 
-func GenerateImage(width, height int, scene *scene.Scene) image.Image {
-	finalImage := scene.FinalImage
+func GenerateImage(width, height int, myScene *scene.Scene) image.Image {
+	finalImage := myScene.FinalImage
 
-	if scene.FrameIndex == 1 || len(scene.AccumulatedImage) == 0 {
-		scene.AccumulatedImage = make([]*glm.Vec4, width*height)
+	if myScene.FrameIndex == 1 || len(myScene.AccumulatedImage) == 0 {
+		myScene.AccumulatedImage = make([]*glm.Vec4, width*height)
 
 		for y := 0; y < height; y++ {
 			for x := 0; x < width; x++ {
-				scene.AccumulatedImage[utils.FlattenXY(x, y, width)] = &glm.Vec4{0.0, 0.0, 0.0, 0.0}
+				myScene.AccumulatedImage[utils.FlattenXY(x, y, width)] = &glm.Vec4{0.0, 0.0, 0.0, 0.0}
 			}
 		}
 	}
 
+	// TODO: Allow to choose between render styles ie accumulate over real time or per pixel with defined sampling
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
-			colour := PerPixel(x, y, width, scene)
+			colour := PerPixel(x, y, width, height, myScene)
 
-			newColour := scene.AccumulatedImage[utils.FlattenXY(x, y, width)].Add(colour)
-			scene.AccumulatedImage[utils.FlattenXY(x, y, width)] = &newColour
+			newColour := myScene.AccumulatedImage[utils.FlattenXY(x, y, width)].Add(colour)
+			myScene.AccumulatedImage[utils.FlattenXY(x, y, width)] = &newColour
+			accumulatedColor := newColour.Mul(1.0 / float64(myScene.FrameIndex))
 
-			accumulatedColour := newColour.Mul(1.0 / float64(scene.FrameIndex))
-
-			finalImage.Set(x, height-y, utils.ConvertToRGBA(accumulatedColour))
+			finalImage.Set(x, height-y, utils.ConvertToRGBA(accumulatedColor))
 		}
 	}
 
-	if scene.ToAccumulate {
-		scene.FrameIndex++
+	if myScene.ToAccumulate {
+		myScene.FrameIndex++
 	} else {
-		scene.FrameIndex = 1
+		myScene.FrameIndex = 1
 	}
 
 	return finalImage
 }
 
-func PerPixel(x, y, width int, myScene *scene.Scene) glm.Vec4 { // Ray Gen
-	ray := Ray{}
-	ray.Origin = myScene.Camera.Position
+func PerPixel(x, y, width, height int, myScene *scene.Scene) glm.Vec4 { // Ray Gen
 
-	ray.Direction = myScene.Camera.RayDirections[utils.FlattenXY(x, y, width)]
+	if (myScene.Camera.RayDirections) == nil {
+		// HACK: This is a hack to make sure that the camera is initialized before the first render.
+		myScene.Camera.OnResize(width, height)
+	}
+
+	ray := &Ray{
+		Origin:    myScene.Camera.Position,
+		Direction: myScene.Camera.RayDirections[utils.FlattenXY(x, y, width)],
+	}
 
 	contribution := glm.Vec3{1.0, 1.0, 1.0} // Throughput
 	totalLight := glm.Vec3{0.0, 0.0, 0.0}
@@ -69,9 +75,8 @@ func PerPixel(x, y, width int, myScene *scene.Scene) glm.Vec4 { // Ray Gen
 		for bounces := 0; bounces < myScene.MaxRayBounces; bounces++ {
 			payload := ray.TraceRay(myScene)
 			if payload.HitDistance < 0 {
-				skyColor := glm.Vec3{0.6, 0.7, 0.9} // TODO: Be able to set the skycolour using UI.
-				// skyColor := glm.Vec3{0.0, 0.0, 0.0}
-				totalLight = totalLight.Add(utils.ComponentWiseMultiplication(skyColor, contribution))
+				// TODO: Be able to set the skycolour using UI.
+				totalLight = totalLight.Add(utils.ComponentWiseMultiplication(myScene.SkyColor, contribution))
 				break
 			}
 

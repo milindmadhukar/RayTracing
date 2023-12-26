@@ -26,14 +26,13 @@ func (applicationWindow *Window) GetRenderedImage(scene *scene.Scene) *canvas.Ra
 		func(w, h int) image.Image {
 			now := time.Now()
 
-			if w != scene.Camera.ViewportHeight || h != scene.Camera.ViewportWidth {
+			if w != scene.Camera.ViewportWidth || h != scene.Camera.ViewportHeight {
 				scene.Camera.OnResize(w, h)
 				scene.FrameIndex = 1
 				scene.FinalImage = image.NewRGBA(image.Rect(0, 0, w, h))
 			}
 
 			renderedImage := renderer.GenerateImage(w, h, scene)
-
 			renderer.UpdateFPSLabel(applicationWindow.FPSLabel, time.Since(now))
 
 			return renderedImage
@@ -89,6 +88,7 @@ func (renderedRaster *RenderedRaster) MouseDown(mouseEvent *desktop.MouseEvent) 
 		renderedRaster.camera.RecalculateViewMatrix()
 		renderedRaster.camera.RecalculateRayDirections()
 		renderedRaster.window.Update()
+		// TODO: Set frame index to 1
 	}
 }
 
@@ -106,6 +106,9 @@ func (renderedRaster *RenderedRaster) KeyDown(keyEvent *fyne.KeyEvent) {
 	rightDirection := renderedRaster.camera.ForwardDirection.Cross(upDirection)
 
 	speed := 0.1
+
+	// TODO: Maybe add some keyboard shortcuts.
+	// Maybe a top bar for import export help github etc.
 
 	switch keyEvent.Name {
 	case fyne.KeyW:
@@ -126,6 +129,8 @@ func (renderedRaster *RenderedRaster) KeyDown(keyEvent *fyne.KeyEvent) {
 	case fyne.KeyE:
 		renderedRaster.camera.Position = renderedRaster.camera.Position.Add(upDirection.Mul(speed))
 		moved = true
+	case fyne.KeyBackTick:
+		// TODO: Find a way to hide the settings panel
 	case fyne.KeyEscape:
 		renderedRaster.window.FyneApp.Quit()
 	}
@@ -134,6 +139,7 @@ func (renderedRaster *RenderedRaster) KeyDown(keyEvent *fyne.KeyEvent) {
 		renderedRaster.camera.RecalculateViewMatrix()
 		renderedRaster.camera.RecalculateRayDirections()
 		renderedRaster.window.Update()
+		// TODO: Set frame index to 1
 	}
 }
 

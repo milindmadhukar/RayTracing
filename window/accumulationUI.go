@@ -25,15 +25,15 @@ func getAccumulationUI(scene *scene.Scene, applicationWindow *Window) *fyne.Cont
 				if err != nil {
 					return
 				}
-        if writer == nil {
-          return
-        }
+				if writer == nil {
+					return
+				}
 				writer.Write(utils.ImageToPNGBytes(scene.FinalImage))
 			}, applicationWindow.FyneWindow)
 		},
 	)
 
-  //FIXME: Only works when clicked multiple times
+	//FIXME: Only works when clicked multiple times
 	resetAccumulationBtn := widget.NewButton(
 		"Reset Accumulation",
 		func() {
@@ -41,5 +41,5 @@ func getAccumulationUI(scene *scene.Scene, applicationWindow *Window) *fyne.Cont
 		},
 	)
 
-	return container.New(layout.NewHBoxLayout(), copyImagetoClipboardBtn, exportImageBtn, resetAccumulationBtn)
+	return container.New(layout.NewGridLayout(3), copyImagetoClipboardBtn, exportImageBtn, resetAccumulationBtn)
 }
