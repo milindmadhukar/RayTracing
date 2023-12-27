@@ -1,7 +1,11 @@
 package window
 
 import (
+	"fmt"
 	"image"
+	"strconv"
+	"sync"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -22,8 +26,12 @@ type RenderedRaster struct {
 }
 
 func (applicationWindow *Window) accumulatedRender(scene *scene.Scene) image.Image {
+	now := time.Now()
 	renderedImage := renderer.AcummulateImage(scene)
-	// renderer.UpdateFPSLabel(applicationWindow.FPSLabel, time.Since(now))
+	frameTime := time.Since(now)
+	fps := int(1 / frameTime.Seconds())
+	frameTimeMs := strconv.FormatFloat(float64(frameTime.Milliseconds()), 'f', 2, 64)
+	applicationWindow.TimeLabel.SetText("FPS: " + strconv.Itoa(fps) + " (Render time: " + frameTimeMs + "ms)")
 	return renderedImage
 }
 
@@ -31,15 +39,38 @@ func (applicationWindow *Window) perPixelRender(scene *scene.Scene) {
 	width := scene.Camera.ViewportWidth
 	height := scene.Camera.ViewportHeight
 
+	applicationWindow.TimeLabel.SetText("Rendering...")
+
+	now := time.Now()
+	var wg sync.WaitGroup
+	wg.Add(width * height)
+
 	for y := height - 1; y > 0; y-- {
 		for x := 0; x < width; x++ {
 			go func(x, y int) {
-				colour := renderer.PerPixel(x, y, width, height, scene)
-				scene.FinalImage.Set(x, height-y, utils.ConvertToRGBA(colour))
+				defer wg.Done()
+				finalColor := glm.Vec4{0.0, 0.0, 0.0, 0.0}
+				for i := 0; i < scene.RaysPerPixel; i++ {
+					finalColor = finalColor.Add(renderer.PerPixel(x, y, width, height, scene))
+				}
+				scene.FinalImage.Set(x, height-y, utils.ConvertToRGBA(finalColor.Mul(1.0/float64(scene.RaysPerPixel))))
 			}(x, y)
 		}
 	}
-	// renderer.UpdateFPSLabel(applicationWindow.FPSLabel, time.Since(now))
+
+	wg.Wait()
+
+	fmt.Print("ok")
+
+	renderTime := time.Since(now)
+	if renderTime.Seconds() > 0.1 {
+		applicationWindow.TimeLabel.SetText("Render time: " + strconv.FormatFloat(renderTime.Seconds(), 'f', 2, 64) + "s")
+	} else {
+		applicationWindow.TimeLabel.SetText("Render time: " + strconv.Itoa(int(renderTime.Milliseconds())) + "ms")
+	}
+
+	fmt.Println("hogaya")
+
 }
 
 func (applicationWindow *Window) GetRenderedImage(scene *scene.Scene) *canvas.Raster {

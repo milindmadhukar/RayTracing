@@ -36,7 +36,7 @@ type Scene struct {
 }
 
 func NewScene() *Scene {
-	basic, err := os.Open("example_scenes/threeballs.json")
+	basic, err := os.Open("example_scenes/rtiow_basic.json")
 	if err != nil {
 		panic(err)
 	}
@@ -74,7 +74,7 @@ func NewRayTracingInOneWeekendScene() *Scene {
 
 	groundMaterial := NewDefaultMaterial()
 	groundMaterial.Albedo = glm.Vec3{0.5, 0.5, 0.5}
-	groundMaterial.Roughness = 0.5
+	groundMaterial.Roughness = 0.9
 	groundMaterial.Metallic = 0.0
 
 	groundSphere := NewDefaultSphere()

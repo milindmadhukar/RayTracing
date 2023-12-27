@@ -11,27 +11,29 @@ import (
 )
 
 type Window struct {
-	FyneApp           fyne.App
-	FyneWindow        fyne.Window
-	SettingsContainer *container.Scroll
-	RenderedRaster    *RenderedRaster
-  CameraPositionContainer *fyne.Container
-	MainContainer     *container.Split
-	FPSLabel          *widget.Label
-	AutoRender        bool
+	FyneApp                 fyne.App
+	FyneWindow              fyne.Window
+	SettingsContainer       *container.Scroll
+	RenderedRaster          *RenderedRaster
+	CameraPositionContainer *fyne.Container
+	MainContainer           *container.Split
+	TimeLabel               *widget.Label
+	AutoRender              bool
 
 	AutoRenderContext       context.Context
 	AutoRenderContextCancel context.CancelFunc
+
+  RenderCancel context.CancelFunc
 }
 
 func (applicationWindow *Window) Create(scene *scene.Scene) {
-	applicationWindow.FPSLabel = widget.NewLabel("FPS: 0 (Render time: 0ms)")
+	applicationWindow.TimeLabel = widget.NewLabel("")
 
 	// BUG: Some component has massive minsize and that is making settings panel very big.
 
 	// TODO: Add Sphere/Remove Sphere dialog and buttons
 
-  // TODO: Start and restart redner buttons
+	// TODO: Start and restart redner buttons
 
 	renderButton := widget.NewButton("Render", func() {
 		applicationWindow.Update()
@@ -63,7 +65,7 @@ func (applicationWindow *Window) Create(scene *scene.Scene) {
 	applicationWindow.SettingsContainer = container.NewVScroll(
 		container.New(
 			layout.NewVBoxLayout(),
-			applicationWindow.FPSLabel,
+			applicationWindow.TimeLabel,
 			renderButton,
 			stateUIContainer,
 			accumlationOptions,
@@ -76,6 +78,11 @@ func (applicationWindow *Window) Create(scene *scene.Scene) {
 	)
 
 	applicationWindow.RenderedRaster = NewRenderedRaster(applicationWindow, scene)
+
+
+  // TODO: Create a toolbaar to start and stop and restart render
+  // After fixing bug when all goroutines end, export options for copying to clipboard and saving to file.
+  // Also have a settings button that launches settings in a new window.
 
 	mainContainer := container.NewHSplit(applicationWindow.RenderedRaster, applicationWindow.SettingsContainer)
 	mainContainer.SetOffset(0.80)
