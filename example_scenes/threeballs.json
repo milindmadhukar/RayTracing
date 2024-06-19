@@ -63,7 +63,7 @@
     }
   ],
   "sky_color": [0.6, 0.7, 0.9],
-  "max_ray_bounces": 3,
-  "rays_per_pixel": 5,
+  "max_ray_bounces": 4,
+  "rays_per_pixel": 16,
   "max_ray_bounce_distance": 1000
 }

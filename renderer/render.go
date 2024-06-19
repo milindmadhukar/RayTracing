@@ -28,21 +28,21 @@ func AcummulateImage(myScene *scene.Scene) *image.RGBA {
 	height := myScene.Camera.ViewportHeight
 
 	if myScene.FrameIndex == 1 {
-		myScene.AccumulatedImage = make([]*glm.Vec4, width*height)
+		// Initialize the image with all 0 vectors
+		myScene.AccumulatedImage = make([]glm.Vec4, width*height)
 
 		for y := 0; y < height; y++ {
 			for x := 0; x < width; x++ {
-				myScene.AccumulatedImage[utils.FlattenXY(x, y, width)] = &glm.Vec4{0.0, 0.0, 0.0, 0.0}
+				myScene.AccumulatedImage[utils.FlattenXY(x, y, width)] = glm.Vec4{0.0, 0.0, 0.0, 0.0}
 			}
 		}
 	}
 
-	// TODO: Allow to choose between render styles ie accumulate over real time or per pixel with defined sampling
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			colour := PerPixel(x, y, width, height, myScene)
 			newColour := myScene.AccumulatedImage[utils.FlattenXY(x, y, width)].Add(colour)
-			myScene.AccumulatedImage[utils.FlattenXY(x, y, width)] = &newColour
+			myScene.AccumulatedImage[utils.FlattenXY(x, y, width)] = newColour
 			accumulatedColor := newColour.Mul(1.0 / float64(myScene.FrameIndex))
 
 			finalImage.Set(x, height-y, utils.ConvertToRGBA(accumulatedColor))
@@ -102,7 +102,6 @@ func PerPixel(x, y, width, height int, myScene *scene.Scene) glm.Vec4 { // Ray G
 
 		ray.Direction = vec1.Sub(vec2.Mul(2.0 * vec1.Dot(vec2)))
 	}
-	// }
 
 	return totalLight.Vec4(1.0)
 }

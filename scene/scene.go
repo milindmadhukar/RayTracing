@@ -16,7 +16,7 @@ type Scene struct {
 	Camera *camera.Camera `json:"camera"`
 
 	FinalImage       *image.RGBA `json:"-"`
-	AccumulatedImage []*glm.Vec4 `json:"-"`
+	AccumulatedImage []glm.Vec4 `json:"-"`
 	ToAccumulate     bool        `json:"-"`
 	IsRendering      bool        `json:"-"`
 
@@ -36,7 +36,7 @@ type Scene struct {
 }
 
 func NewScene() *Scene {
-	basic, err := os.Open("example_scenes/rtiow_basic.json")
+	basic, err := os.Open("example_scenes/threeballs.json")
 	if err != nil {
 		panic(err)
 	}

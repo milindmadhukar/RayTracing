@@ -2,7 +2,7 @@ FROM golang:1.17-bullseye as builder
 WORKDIR /app
 
 RUN apt update && apt upgrade -y
-RUN apt install -y build-essential libgl1-mesa-dev xorg-dev
+RUN apt install -y gcc libgl1-mesa-dev xorg-dev
 ADD go.mod ./
 ADD go.sum ./
 RUN go mod download -x

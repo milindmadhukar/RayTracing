@@ -1,10 +1,8 @@
 package window
 
 import (
-	"fmt"
 	"image"
 	"strconv"
-	"sync"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -42,25 +40,16 @@ func (applicationWindow *Window) perPixelRender(scene *scene.Scene) {
 	applicationWindow.TimeLabel.SetText("Rendering...")
 
 	now := time.Now()
-	var wg sync.WaitGroup
-	wg.Add(width * height)
-
 	for y := height - 1; y > 0; y-- {
 		for x := 0; x < width; x++ {
-			go func(x, y int) {
-				defer wg.Done()
-				finalColor := glm.Vec4{0.0, 0.0, 0.0, 0.0}
-				for i := 0; i < scene.RaysPerPixel; i++ {
-					finalColor = finalColor.Add(renderer.PerPixel(x, y, width, height, scene))
-				}
-				scene.FinalImage.Set(x, height-y, utils.ConvertToRGBA(finalColor.Mul(1.0/float64(scene.RaysPerPixel))))
-			}(x, y)
+      // NOTE: Running this in a goroutine makes all pixels render together
+			finalColor := glm.Vec4{0.0, 0.0, 0.0, 0.0}
+			for i := 0; i < scene.RaysPerPixel; i++ {
+				finalColor = finalColor.Add(renderer.PerPixel(x, y, width, height, scene))
+			}
+			scene.FinalImage.Set(x, height-y, utils.ConvertToRGBA(finalColor.Mul(1.0/float64(scene.RaysPerPixel))))
 		}
 	}
-
-	wg.Wait()
-
-	fmt.Print("ok")
 
 	renderTime := time.Since(now)
 	if renderTime.Seconds() > 0.1 {
@@ -68,8 +57,6 @@ func (applicationWindow *Window) perPixelRender(scene *scene.Scene) {
 	} else {
 		applicationWindow.TimeLabel.SetText("Render time: " + strconv.Itoa(int(renderTime.Milliseconds())) + "ms")
 	}
-
-	fmt.Println("hogaya")
 
 }
 
